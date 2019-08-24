@@ -24,7 +24,6 @@ def _delete_table_contents(featuregroup_id, featurestore_id):
         :RestAPIError: if there was an error in the REST call to Hopsworks
     """
     method = constants.HTTP_CONFIG.HTTP_POST
-    connection = util._get_http_connection(https=True)
     resource_url = (constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_REST_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_PROJECT_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
@@ -34,22 +33,21 @@ def _delete_table_contents(featuregroup_id, featurestore_id):
                     constants.REST_CONFIG.HOPSWORKS_FEATUREGROUPS_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
                     str(featuregroup_id) + constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_FEATUREGROUP_CLEAR_RESOURCE)
-    response = util.send_request(connection, method, resource_url)
-    resp_body = response.read()
-    response_object = json.loads(resp_body)
+    response = util.send_request(method, resource_url)
+    response_object = response.json()
     # for python 3
     if sys.version_info > (3, 0):
-        if response.code != 200:
+        if response.status_code != 200:
             error_code, error_msg, user_msg = util._parse_rest_error(response_object)
             raise RestAPIError("Could not clear featuregroup contents (url: {}), server response: \n "
                                  "HTTP code: {}, HTTP reason: {}, error code: {}, error msg: {}, user msg: {}".format(
-                resource_url, response.code, response.reason, error_code, error_msg, user_msg))
+                resource_url, response.status_code, response.reason, error_code, error_msg, user_msg))
     else:  # for python 2
-        if response.status != 200:
+        if response.status_code != 200:
             error_code, error_msg, user_msg = util._parse_rest_error(response_object)
             raise RestAPIError("Could not clear featuregroup contents (url: {}), server response: \n " \
                                  "HTTP code: {}, HTTP reason: {}, error code: {}, error msg: {}, user msg: {}".format(
-                resource_url, response.code, response.reason, error_code, error_msg, user_msg))
+                resource_url, response.status_code, response.reason, error_code, error_msg, user_msg))
     return response_object
 
 
@@ -64,28 +62,26 @@ def _get_featurestores():
         :RestAPIError: if there was an error in the REST call to Hopsworks
     """
     method = constants.HTTP_CONFIG.HTTP_GET
-    connection = util._get_http_connection(https=True)
     resource_url = (constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_REST_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_PROJECT_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
                     hdfs.project_id() + constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_FEATURESTORES_RESOURCE)
-    response = util.send_request(connection, method, resource_url)
-    resp_body = response.read()
-    response_object = json.loads(resp_body)
+    response = util.send_request(method, resource_url)
+    response_object = response.json()
     # for python 3
     if sys.version_info > (3, 0):
-        if response.code != 200:
+        if response.status_code != 200:
             error_code, error_msg, user_msg = util._parse_rest_error(response_object)
             raise RestAPIError("Could not fetch feature stores (url: {}), server response: \n " \
                                  "HTTP code: {}, HTTP reason: {}, error code: {}, error msg: {}, user msg: {}".format(
-                resource_url, response.code, response.reason, error_code, error_msg, user_msg))
+                resource_url, response.status_code, response.reason, error_code, error_msg, user_msg))
     else:  # for python 2
-        if response.status != 200:
+        if response.status_code != 200:
             error_code, error_msg, user_msg = util._parse_rest_error(response_object)
             raise RestAPIError("Could not fetch feature stores (url: {}), server response: \n " \
                                  "HTTP code: {}, HTTP reason: {}, error code: {}, error msg: {}, user msg: {}".format(
-                resource_url, response.code, response.reason, error_code, error_msg, user_msg))
+                resource_url, response.status_code, response.reason, error_code, error_msg, user_msg))
     return response_object
 
 
@@ -104,7 +100,6 @@ def _get_featurestore_metadata(featurestore):
         :RestAPIError: if there was an error in the REST call to Hopsworks
     """
     method = constants.HTTP_CONFIG.HTTP_GET
-    connection = util._get_http_connection(https=True)
     resource_url = (constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_REST_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_PROJECT_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
@@ -112,26 +107,25 @@ def _get_featurestore_metadata(featurestore):
                     constants.REST_CONFIG.HOPSWORKS_FEATURESTORES_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
                     featurestore + constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_FEATURESTORE_METADATA_RESOURCE)
-    response = util.send_request(connection, method, resource_url)
-    resp_body = response.read()
-    response_object = json.loads(resp_body)
+    response = util.send_request(method, resource_url)
+    response_object = response.json()
     # for python 3
     if sys.version_info > (3, 0):
-        if response.code != 200:
+        if response.status_code != 200:
             error_code, error_msg, user_msg = util._parse_rest_error(response_object)
             raise RestAPIError("Could not fetch featurestore metadata for featurestore: {} (url: {}), "
                                  "server response: \n "
                                  "HTTP code: {}, HTTP reason: {}, error code: {}, "
                                  "error msg: {}, user msg: {}".format(
-                resource_url, featurestore, response.code, response.reason, error_code, error_msg, user_msg))
+                resource_url, featurestore, response.status_code, response.reason, error_code, error_msg, user_msg))
     else:  # for python 2
-        if response.status != 200:
+        if response.status_code != 200:
             error_code, error_msg, user_msg = util._parse_rest_error(response_object)
             raise RestAPIError("Could not fetch featurestore metadata for featurestore: {} (url: {}), "
                                  "server response: \n " \
                                  "HTTP code: {}, HTTP reason: {}, error code: {}, "
                                  "error msg: {}, user msg: {}".format(
-                resource_url, featurestore, response.status, response.reason, error_code, error_msg, user_msg))
+                resource_url, featurestore, response.status_code, response.reason, error_code, error_msg, user_msg))
     return response_object
 
 def _pre_process_jobs_list(jobNames):
@@ -206,7 +200,6 @@ def _create_featuregroup_rest(featuregroup, featurestore_id, description, featur
     json_embeddable = json.dumps(json_contents)
     headers = {constants.HTTP_CONFIG.HTTP_CONTENT_TYPE: constants.HTTP_CONFIG.HTTP_APPLICATION_JSON}
     method = constants.HTTP_CONFIG.HTTP_POST
-    connection = util._get_http_connection(https=True)
     resource_url = (constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_REST_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_PROJECT_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
@@ -214,22 +207,21 @@ def _create_featuregroup_rest(featuregroup, featurestore_id, description, featur
                     constants.REST_CONFIG.HOPSWORKS_FEATURESTORES_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
                     str(featurestore_id) + constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_FEATUREGROUPS_RESOURCE)
-    response = util.send_request(connection, method, resource_url, body=json_embeddable, headers=headers)
-    resp_body = response.read()
-    response_object = json.loads(resp_body)
+    response = util.send_request(method, resource_url, data=json_embeddable, headers=headers)
+    response_object = response.json()
     # for python 3
     if sys.version_info > (3, 0):
-        if response.code != 201 and response.code != 200:
+        if response.status_code != 201 and response.status_code != 200:
             error_code, error_msg, user_msg = util._parse_rest_error(response_object)
             raise RestAPIError("Could not create feature group (url: {}), server response: \n " \
                                  "HTTP code: {}, HTTP reason: {}, error code: {}, error msg: {}, user msg: {}".format(
-                resource_url, response.code, response.reason, error_code, error_msg, user_msg))
+                resource_url, response.status_code, response.reason, error_code, error_msg, user_msg))
     else:  # for python 2
-        if response.status != 201 and response.status != 200:
+        if response.status_code != 201 and response.status_code != 200:
             error_code, error_msg, user_msg = util._parse_rest_error(response_object)
             raise RestAPIError("Could not create feature group (url: {}), server response: \n " \
                                  "HTTP code: {}, HTTP reason: {}, error code: {}, error msg: {}, user msg: {}".format(
-                resource_url, response.status, response.reason, error_code, error_msg, user_msg))
+                resource_url, response.status_code, response.reason, error_code, error_msg, user_msg))
     return response_object
 
 
@@ -267,7 +259,6 @@ def _update_featuregroup_stats_rest(featuregroup_id, featurestore_id, feature_co
     json_embeddable = json.dumps(json_contents, allow_nan=False)
     headers = {constants.HTTP_CONFIG.HTTP_CONTENT_TYPE: constants.HTTP_CONFIG.HTTP_APPLICATION_JSON}
     method = constants.HTTP_CONFIG.HTTP_PUT
-    connection = util._get_http_connection(https=True)
     resource_url = (constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_REST_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_PROJECT_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
@@ -279,22 +270,21 @@ def _update_featuregroup_stats_rest(featuregroup_id, featurestore_id, feature_co
                     + str(featuregroup_id) + "?" + constants.REST_CONFIG.JSON_FEATURESTORE_UPDATE_STATS_QUERY_PARAM
                     + "=true" + constants.DELIMITERS.AMPERSAND_DELIMITER +
                     constants.REST_CONFIG.JSON_FEATURESTORE_UPDATE_METADATA_QUERY_PARAM + "=false")
-    response = util.send_request(connection, method, resource_url, body=json_embeddable, headers=headers)
-    resp_body = response.read()
-    response_object = json.loads(resp_body)
+    response = util.send_request(method, resource_url, data=json_embeddable, headers=headers)
+    response_object = response.json()
     # for python 3
     if sys.version_info > (3, 0):
-        if (response.code != 200):
+        if (response.status_code != 200):
             error_code, error_msg, user_msg = util._parse_rest_error(response_object)
             raise RestAPIError("Could not update featuregroup stats (url: {}), server response: \n " \
                                  "HTTP code: {}, HTTP reason: {}, error code: {}, error msg: {}, user msg: {}".format(
-                resource_url, response.code, response.reason, error_code, error_msg, user_msg))
+                resource_url, response.status_code, response.reason, error_code, error_msg, user_msg))
     else:  # for python 2
-        if (response.status != 200):
+        if (response.status_code != 200):
             error_code, error_msg, user_msg = util._parse_rest_error(response_object)
             raise RestAPIError("Could not update featuregroup stats (url: {}), server response: \n " \
                                  "HTTP code: {}, HTTP reason: {}, error code: {}, error msg: {}, user msg: {}".format(
-                resource_url, response.status, response.reason, error_code, error_msg, user_msg))
+                resource_url, response.status_code, response.reason, error_code, error_msg, user_msg))
     return response_object
 
 
@@ -350,7 +340,6 @@ def _create_training_dataset_rest(training_dataset, featurestore_id, description
     json_embeddable = json.dumps(json_contents)
     headers = {constants.HTTP_CONFIG.HTTP_CONTENT_TYPE: constants.HTTP_CONFIG.HTTP_APPLICATION_JSON}
     method = constants.HTTP_CONFIG.HTTP_POST
-    connection = util._get_http_connection(https=True)
     resource_url = (constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_REST_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_PROJECT_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
@@ -358,22 +347,21 @@ def _create_training_dataset_rest(training_dataset, featurestore_id, description
                     constants.REST_CONFIG.HOPSWORKS_FEATURESTORES_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
                     str(featurestore_id) + constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_TRAININGDATASETS_RESOURCE)
-    response = util.send_request(connection, method, resource_url, body=json_embeddable, headers=headers)
-    resp_body = response.read()
-    response_object = json.loads(resp_body)
+    response = util.send_request(method, resource_url, data=json_embeddable, headers=headers)
+    response_object = response.json()
     # for python 3
     if sys.version_info > (3, 0):
-        if response.code != 201 and response.code != 200:
+        if response.status_code != 201 and response.status_code != 200:
             error_code, error_msg, user_msg = util._parse_rest_error(response_object)
             raise RestAPIError("Could not create training dataset (url: {}), server response: \n " \
                                  "HTTP code: {}, HTTP reason: {}, error code: {}, error msg: {}, user msg: {}".format(
-                resource_url, response.code, response.reason, error_code, error_msg, user_msg))
+                resource_url, response.status_code, response.reason, error_code, error_msg, user_msg))
     else:  # for python 2
-        if response.status != 201 and response.status != 200:
+        if response.status_code != 201 and response.status_code != 200:
             error_code, error_msg, user_msg = util._parse_rest_error(response_object)
             raise RestAPIError("Could not create training dataset (url: {}), server response: \n " \
                                  "HTTP code: {}, HTTP reason: {}, error code: {}, error msg: {}, user msg: {}".format(
-                resource_url, response.status, response.reason, error_code, error_msg, user_msg))
+                resource_url, response.status_code, response.reason, error_code, error_msg, user_msg))
     return response_object
 
 
@@ -411,7 +399,6 @@ def _update_training_dataset_stats_rest(
     json_embeddable = json.dumps(json_contents)
     headers = {constants.HTTP_CONFIG.HTTP_CONTENT_TYPE: constants.HTTP_CONFIG.HTTP_APPLICATION_JSON}
     method = constants.HTTP_CONFIG.HTTP_PUT
-    connection = util._get_http_connection(https=True)
     resource_url = (constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_REST_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_PROJECT_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
@@ -422,23 +409,22 @@ def _update_training_dataset_stats_rest(
                     + str(training_dataset_id) + "?" + constants.REST_CONFIG.JSON_FEATURESTORE_UPDATE_STATS_QUERY_PARAM
                     + "=true" + constants.DELIMITERS.AMPERSAND_DELIMITER +
                     constants.REST_CONFIG.JSON_FEATURESTORE_UPDATE_METADATA_QUERY_PARAM + "=false")
-    response = util.send_request(connection, method, resource_url, body=json_embeddable, headers=headers)
-    resp_body = response.read()
-    response_object = json.loads(resp_body)
+    response = util.send_request(method, resource_url, data=json_embeddable, headers=headers)
+    response_object = response.json()
     # for python 3
     if sys.version_info > (3, 0):
-        if (response.code != 200):
+        if (response.status_code != 200):
             error_code, error_msg, user_msg = util._parse_rest_error(response_object)
             raise RestAPIError("Could not update training dataset stats (url: {}), server response: \n " \
                                "HTTP code: {}, HTTP reason: {}, error code: {}, error msg: {}, user msg: {}".format(
-                resource_url, response.code, response.reason, error_code, error_msg, user_msg))
+                resource_url, response.status_code, response.reason, error_code, error_msg, user_msg))
     else:
         # for python 2
-        if (response.status != 200):
+        if (response.status_code != 200):
             error_code, error_msg, user_msg = util._parse_rest_error(response_object)
             raise RestAPIError("Could not update training dataset stats (url: {}), server response: \n " \
                                "HTTP code: {}, HTTP reason: {}, error code: {}, error msg: {}, user msg: {}".format(
-                resource_url, response.status, response.reason, error_code, error_msg, user_msg))
+                resource_url, response.status_code, response.reason, error_code, error_msg, user_msg))
     return response_object
 
 
@@ -458,7 +444,6 @@ def _get_featuregroup_rest(featuregroup_id, featurestore_id):
     """
     headers = {constants.HTTP_CONFIG.HTTP_CONTENT_TYPE: constants.HTTP_CONFIG.HTTP_APPLICATION_JSON}
     method = constants.HTTP_CONFIG.HTTP_GET
-    connection = util._get_http_connection(https=True)
     resource_url = (constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_REST_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_PROJECT_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
@@ -468,21 +453,20 @@ def _get_featuregroup_rest(featuregroup_id, featurestore_id):
                     constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_FEATUREGROUPS_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER
                     + str(featuregroup_id))
-    response = util.send_request(connection, method, resource_url, headers=headers)
-    resp_body = response.read()
-    response_object = json.loads(resp_body)
+    response = util.send_request(method, resource_url, headers=headers)
+    response_object = response.json()
     try:  # for python 3
-        if (response.code != 200):
+        if (response.status_code != 200):
             error_code, error_msg, user_msg = util._parse_rest_error(response_object)
             raise RestAPIError("Could not get the metadata of featuregroup (url: {}), server response: \n " \
                                "HTTP code: {}, HTTP reason: {}, error code: {}, error msg: {}, user msg: {}".format(
-                resource_url, response.code, response.reason, error_code, error_msg, user_msg))
+                resource_url, response.status_code, response.reason, error_code, error_msg, user_msg))
     except:  # for python 2
-        if (response.status != 200):
+        if (response.status_code != 200):
             error_code, error_msg, user_msg = util._parse_rest_error(response_object)
             raise RestAPIError("Could not get the metadata of featuregroup (url: {}), server response: \n " \
                                "HTTP code: {}, HTTP reason: {}, error code: {}, error msg: {}, user msg: {}".format(
-                resource_url, response.status, response.reason, error_code, error_msg, user_msg))
+                resource_url, response.status_code, response.reason, error_code, error_msg, user_msg))
     return response_object
 
 
@@ -502,7 +486,6 @@ def _get_training_dataset_rest(training_dataset_id, featurestore_id):
     """
     headers = {constants.HTTP_CONFIG.HTTP_CONTENT_TYPE: constants.HTTP_CONFIG.HTTP_APPLICATION_JSON}
     method = constants.HTTP_CONFIG.HTTP_GET
-    connection = util._get_http_connection(https=True)
     resource_url = (constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_REST_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_PROJECT_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
@@ -512,19 +495,18 @@ def _get_training_dataset_rest(training_dataset_id, featurestore_id):
                     constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_TRAININGDATASETS_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER
                     + str(training_dataset_id))
-    response = util.send_request(connection, method, resource_url, headers=headers)
-    resp_body = response.read()
-    response_object = json.loads(resp_body)
+    response = util.send_request(method, resource_url, headers=headers)
+    response_object = response.json()
     try:  # for python 3
-        if (response.code != 200):
+        if (response.status_code != 200):
             error_code, error_msg, user_msg = util._parse_rest_error(response_object)
             raise RestAPIError("Could not get the metadata of featuregroup (url: {}), server response: \n " \
                                "HTTP code: {}, HTTP reason: {}, error code: {}, error msg: {}, user msg: {}".format(
-                resource_url, response.code, response.reason, error_code, error_msg, user_msg))
+                resource_url, response.status_code, response.reason, error_code, error_msg, user_msg))
     except:  # for python 2
-        if (response.status != 200):
+        if (response.status_code != 200):
             error_code, error_msg, user_msg = util._parse_rest_error(response_object)
             raise RestAPIError("Could not get the metadata of featuregroup (url: {}), server response: \n " \
                                "HTTP code: {}, HTTP reason: {}, error code: {}, error msg: {}, user msg: {}".format(
-                resource_url, response.status, response.reason, error_code, error_msg, user_msg))
+                resource_url, response.status_code, response.reason, error_code, error_msg, user_msg))
     return response_object

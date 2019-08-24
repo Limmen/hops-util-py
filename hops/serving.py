@@ -73,19 +73,17 @@ def _delete_serving_rest(serving_id):
         :RestAPIError: if there was an error with the REST call to Hopsworks
     """
     method = constants.HTTP_CONFIG.HTTP_DELETE
-    connection = util._get_http_connection(https=True)
     resource_url = (constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_REST_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_PROJECT_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
                     hdfs.project_id() + constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_SERVING_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER
                     + str(serving_id))
-    response = util.send_request(connection, method, resource_url)
+    response = util.send_request(method, resource_url)
     # for python 3
     if sys.version_info > (3, 0):
-        if response.code != 200:
-            resp_body = response.read()
-            response_object = json.loads(resp_body)
+        if response.status_code != 200:
+            response_object = response.json()
             error_code, error_msg, user_msg = util._parse_rest_error(response_object)
             raise exceptions.RestAPIError("Could not delete serving with id {} (url: {}), "
                                           "server response: \n "
@@ -93,9 +91,8 @@ def _delete_serving_rest(serving_id):
                                           "user msg: {}".format(serving_id, resource_url, response.code,
                                                                 response.reason, error_code, error_msg, user_msg))
     else:  # for python 2
-        if response.status != 200:
-            resp_body = response.read()
-            response_object = json.loads(resp_body)
+        if response.status_code != 200:
+            response_object = response.json()
             error_code, error_msg, user_msg = util._parse_rest_error(response_object)
             raise exceptions.RestAPIError("Could not delete serving with id {} (url: {}), "
                                           "server response: \n "
@@ -161,19 +158,17 @@ def _start_or_stop_serving_rest(serving_id, action):
         :RestAPIError: if there was an error with the REST call to Hopsworks
     """
     method = constants.HTTP_CONFIG.HTTP_POST
-    connection = util._get_http_connection(https=True)
     resource_url = (constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_REST_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_PROJECT_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
                     hdfs.project_id() + constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_SERVING_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER
                     + str(serving_id) + constants.MODEL_SERVING.SERVING_START_OR_STOP_PATH_PARAM + action)
-    response = util.send_request(connection, method, resource_url)
+    response = util.send_request(method, resource_url)
     # for python 3
     if sys.version_info > (3, 0):
-        if response.code != 200:
-            resp_body = response.read()
-            response_object = json.loads(resp_body)
+        if response.status_code != 200:
+            response_object = response.json()
             error_code, error_msg, user_msg = util._parse_rest_error(response_object)
             raise exceptions.RestAPIError("Could not perform action {} on serving with id {} (url: {}), "
                                           "server response: \n "
@@ -181,9 +176,8 @@ def _start_or_stop_serving_rest(serving_id, action):
                                           "user msg: {}".format(action, serving_id, resource_url, response.code,
                                                                 response.reason, error_code, error_msg, user_msg))
     else:  # for python 2
-        if response.status != 200:
-            resp_body = response.read()
-            response_object = json.loads(resp_body)
+        if response.status_code != 200:
+            response_object = response.json()
             error_code, error_msg, user_msg = util._parse_rest_error(response_object)
             raise exceptions.RestAPIError("Could not perform action {} on serving with id {} (url: {}), "
                                           "server response: \n "
@@ -323,16 +317,15 @@ def _create_or_update_serving_rest(model_path, model_name, serving_type, model_v
     json_embeddable = json.dumps(json_contents)
     headers = {constants.HTTP_CONFIG.HTTP_CONTENT_TYPE: constants.HTTP_CONFIG.HTTP_APPLICATION_JSON}
     method = constants.HTTP_CONFIG.HTTP_PUT
-    connection = util._get_http_connection(https=True)
     resource_url = (constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_REST_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_PROJECT_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
                     hdfs.project_id() + constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_SERVING_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER)
-    response = util.send_request(connection, method, resource_url, body=json_embeddable, headers=headers)
+    response = util.send_request(method, resource_url, data=json_embeddable, headers=headers)
     # for python 3
     if sys.version_info > (3, 0):
-        if response.code != 201 and response.code != 200:
+        if response.status_code != 201 and response.code != 200:
             resp_body = response.read()
             response_object = json.loads(resp_body)
             error_code, error_msg, user_msg = util._parse_rest_error(response_object)
@@ -341,9 +334,8 @@ def _create_or_update_serving_rest(model_path, model_name, serving_type, model_v
                                           "user msg: {}".format(resource_url, response.code, response.reason,
                                                                 error_code, error_msg, user_msg))
     else:  # for python 2
-        if response.status != 201 and response.status != 200:
-            resp_body = response.read()
-            response_object = json.loads(resp_body)
+        if response.status_code != 201 and response.status_code != 200:
+            response_object = response.json()
             error_code, error_msg, user_msg = util._parse_rest_error(response_object)
             raise exceptions.RestAPIError("Could not create or update serving (url: {}), server response: \n " \
                                           "HTTP code: {}, HTTP reason: {}, error code: {}, error msg: {}, "
@@ -667,18 +659,16 @@ def _get_servings_rest():
         :RestAPIError: if there was an error with the REST call to Hopsworks
     """
     method = constants.HTTP_CONFIG.HTTP_GET
-    connection = util._get_http_connection(https=True)
     resource_url = (constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_REST_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_PROJECT_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
                     hdfs.project_id() + constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_SERVING_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER)
-    response = util.send_request(connection, method, resource_url)
-    resp_body = response.read()
-    response_object = json.loads(resp_body)
+    response = util.send_request(method, resource_url)
+    response_object = response.json()
     # for python 3
     if sys.version_info > (3, 0):
-        if response.code != 200:
+        if response.status_code != 200:
             error_code, error_msg, user_msg = util._parse_rest_error(response_object)
             raise exceptions.RestAPIError("Could not fetch list of servings from Hopsworks REST API (url: {}), "
                                           "server response: \n "
@@ -686,7 +676,7 @@ def _get_servings_rest():
                                           "error msg: {}, user msg: {}".format(
                 resource_url, response.code, response.reason, error_code, error_msg, user_msg))
     else:
-        if response.status != 200:
+        if response.status_code != 200:
             error_code, error_msg, user_msg = util._parse_rest_error(response_object)
             raise exceptions.RestAPIError("Could not fetch list of servings from Hopsworks REST API (url: {}), "
                                           "server response: \n "
@@ -733,7 +723,6 @@ def _make_inference_request_rest(serving_name, data, verb):
     json_embeddable = json.dumps(data)
     headers = {constants.HTTP_CONFIG.HTTP_CONTENT_TYPE: constants.HTTP_CONFIG.HTTP_APPLICATION_JSON}
     method = constants.HTTP_CONFIG.HTTP_POST
-    connection = util._get_http_connection(https=True)
     resource_url = (constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_REST_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_PROJECT_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
@@ -741,19 +730,18 @@ def _make_inference_request_rest(serving_name, data, verb):
                     constants.REST_CONFIG.HOPSWORKS_INFERENCE_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER +
                     constants.REST_CONFIG.HOPSWORKS_MODELS_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER
                     + serving_name + verb)
-    response = util.send_request(connection, method, resource_url, body=json_embeddable, headers=headers)
-    resp_body = response.read()
-    response_object = json.loads(resp_body)
+    response = util.send_request(method, resource_url, data=json_embeddable, headers=headers)
+    response_object = response.json()
     error_code, error_msg, user_msg = util._parse_rest_error(response_object)
     # for python 3
     if sys.version_info > (3, 0):
-        if response.code != 201 and response.code != 200:
+        if response.status_code != 201 and response.status_code != 200:
             raise exceptions.RestAPIError("Could not create or update serving (url: {}), server response: \n " \
                                           "HTTP code: {}, HTTP reason: {}, error code: {}, error msg: {}, "
                                           "user msg: {}".format(resource_url, response.code, response.reason,
                                                                 error_code, error_msg, user_msg))
     else:  # for python 2
-        if response.status != 201 and response.status != 200:
+        if response.status_code != 201 and response.status_code != 200:
             raise exceptions.RestAPIError("Could not create or update serving (url: {}), server response: \n " \
                                           "HTTP code: {}, HTTP reason: {}, error code: {}, error msg: {}, "
                                           "user msg: {}".format(resource_url, response.status, response.reason,

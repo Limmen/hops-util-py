@@ -15,7 +15,6 @@ import time
 from hops import hdfs
 from hops import version
 from hops import constants
-import ssl
 
 #! Needed for hops library backwards compatability
 try:
@@ -29,16 +28,13 @@ try:
 except:
     pass
 
-try:
-    import http.client as http
-except ImportError:
-    import httplib as http
-
 # in case importing in %%local
 try:
     from pyspark.sql import SparkSession
 except:
     pass
+
+session = requests.session()
 
 def _get_elastic_endpoint():
     """
@@ -142,37 +138,18 @@ def _get_host_port_pair():
     host_port_pair = endpoint.split(':')
     return host_port_pair
 
-def _get_http_connection(https=False):
-    """
-    Opens a HTTP(S) connection to Hopsworks
 
-    Args:
-        https: boolean flag whether to use Secure HTTP or regular HTTP
-
-    Returns:
-        HTTP(S)Connection
-    """
-    host_port_pair = _get_host_port_pair()
-    if (https):
-        PROTOCOL = ssl.PROTOCOL_TLSv1_2
-        ssl_context = ssl.SSLContext(PROTOCOL)
-        connection = http.HTTPSConnection(str(host_port_pair[0]), int(host_port_pair[1]), context = ssl_context)
-    else:
-        connection = http.HTTPConnection(str(host_port_pair[0]), int(host_port_pair[1]))
-    return connection
-
-
-def send_request(connection, method, resource, body=None, headers=None):
+def send_request(method, resource, data=None, headers=None, verify=constants.SSL_CONFIG.DOMAIN_CA_TRUSTSTORE_PEM):
     """
     Sends a request to Hopsworks. In case of Unauthorized response, submit the request once more as jwt might not
     have been read properly from local container.
 
     Args:
-        connection: HTTP connection instance to Hopsworks
         method: HTTP(S) method
         resource: Hopsworks resource
-        body: HTTP(S) body
+        data: HTTP(S) payload
         headers: HTTP(S) headers
+        verify: Whether to verify the https request
 
     Returns:
         HTTP(S) response
@@ -180,12 +157,16 @@ def send_request(connection, method, resource, body=None, headers=None):
     if headers is None:
         headers = {}
     headers[constants.HTTP_CONFIG.HTTP_AUTHORIZATION] = "Bearer " + get_jwt()
-    connection.request(method, resource, body, headers)
-    response = connection.getresponse()
-    if response.status == constants.HTTP_CONFIG.HTTP_UNAUTHORIZED:
-        headers[constants.HTTP_CONFIG.HTTP_AUTHORIZATION] = "Bearer " + get_jwt()
-        connection.request(method, resource, body, headers)
-        response = connection.getresponse()
+    host_port_pair = _get_host_port_pair()
+    url = "https://" + host_port_pair[0] + ":" + host_port_pair[1] + resource
+    req = requests.Request(method, url, data=data, headers=headers)
+    prepped = session.prepare_request(req)
+    response = session.send(prepped, verify=verify)
+
+    if response.status_code == constants.HTTP_CONFIG.HTTP_UNAUTHORIZED:
+        req.headers[constants.HTTP_CONFIG.HTTP_AUTHORIZATION] = "Bearer " + get_jwt()
+        prepped = session.prepare_request(req)
+        response = session.send(prepped)
     return response
 
 
@@ -297,12 +278,13 @@ def _put_elastic(project, appid, elastic_id, json_data):
     if not elastic_endpoint:
         return
     headers = {'Content-type': 'application/json'}
-    session = requests.Session()
 
     retries = 3
     resp=None
     while retries > 0:
-        resp = session.put("http://" + elastic_endpoint + "/" +  project.lower() + "_experiments/experiments/" + appid + "_" + str(elastic_id), data=json_data, headers=headers, verify=False)
+        resp = send_request(constants.HTTP_CONFIG.HTTP_PUT, "http://" + elastic_endpoint + "/" +  project.lower() +
+                           "_experiments/experiments/" + appid + "_" + str(elastic_id), data=json_data,
+                           headers=headers, verify=False)
         if resp.status_code == 200:
             return
         else:

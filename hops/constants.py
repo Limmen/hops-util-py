@@ -75,6 +75,7 @@ class SSL_CONFIG:
     PEM_CLIENT_KEY_CONFIG = "client_key.pem"
     PEM_CA_CHAIN_CERTIFICATE_CONFIG = "ca_chain.pem"
     DOMAIN_CA_TRUSTSTORE = "domain_ca_truststore"
+    DOMAIN_CA_TRUSTSTORE_PEM = "domain_ca_truststore_pem"
     CRYPTO_MATERIAL_PASSWORD = "material_passwd"
     PEM_CA_ROOT_CERT = "/srv/hops/kagent/host-certs/hops_root_ca.pem"
 
